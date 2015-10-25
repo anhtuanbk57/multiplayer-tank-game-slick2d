@@ -1,10 +1,11 @@
 package com.tuanna.states;
 
 import com.tuanna.main.Constants;
-import com.tuanna.widgets.TextBox;
+import com.tuanna.widgets.MenuButton;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.*;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.util.ResourceLoader;
@@ -17,8 +18,10 @@ public class MenuState extends BasicGameState {
 
     private StateBasedGame basedGame_;
     private GameContainer gameContainer_;
-    private TextBox startBox_;
-    private TextBox exitBox_;
+    private MenuButton createBox_;
+    private MenuButton joinBox_;
+    private MenuButton exitBox_;
+    private Image cover_;
 
     private int stateId_;
 
@@ -33,12 +36,10 @@ public class MenuState extends BasicGameState {
 
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
-        basedGame_ = stateBasedGame;
-        gameContainer_ = gameContainer;
-        int xPos = Constants.WINDOW_WIDTH / 4;
-        int yPos = Constants.WINDOW_HEIGHT / 5;
-        int width = xPos * 2;
-        int height = yPos;
+        int buttonWidth = MenuButton.MENU_BUTTON_WIDTH;
+        int buttonHeight = MenuButton.MENU_BUTTON_HEIGHT;
+        int xPos = (Constants.WINDOW_WIDTH - buttonWidth) / 2;
+        int yPos = (Constants.WINDOW_HEIGHT - buttonHeight * 3 - MenuButton.MENU_BUTTON_MARGIN * 2) / 2;
 
         java.awt.Font awtFont;
         try {
@@ -50,18 +51,21 @@ public class MenuState extends BasicGameState {
             return;
         }
         Font menuFont = new TrueTypeFont(awtFont , true);
-        startBox_ = new TextBox(menuFont, Constants.START_TEXT, xPos, yPos, width, height);
+        createBox_ = new MenuButton(menuFont, Constants.CREATE_TEXT, xPos, yPos, buttonWidth, buttonHeight);
+        yPos = yPos + buttonHeight + MenuButton.MENU_BUTTON_MARGIN;
+        joinBox_ = new MenuButton(menuFont, Constants.JOIN_TEXT, xPos, yPos, buttonWidth, buttonHeight);
+        yPos = yPos + buttonHeight + MenuButton.MENU_BUTTON_MARGIN;
+        exitBox_ = new MenuButton(menuFont, Constants.EXIT_TEXT, xPos, yPos, buttonWidth, buttonHeight);
 
-        yPos = yPos * 3;
-        exitBox_ = new TextBox(menuFont, Constants.EXIT_TEXT, xPos, yPos, width, height);
-
-        gameContainer.getInput().addMouseListener(this);
+        cover_ = new Image("res/menu-cover.jpg");
     }
 
     @Override
     public void render(GameContainer gc, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
-        startBox_.draw();
-        exitBox_.draw();
+        graphics.drawImage(cover_, 0, 0);
+        createBox_.drawSelf();
+        joinBox_.drawSelf();
+        exitBox_.drawSelf();
     }
 
     @Override
@@ -69,10 +73,26 @@ public class MenuState extends BasicGameState {
     }
 
     @Override
+    public void enter(GameContainer container, StateBasedGame game) throws SlickException {
+        super.enter(container, game);
+        basedGame_ = game;
+        gameContainer_ = container;
+        container.getInput().addMouseListener(this);
+    }
+
+    @Override
+    public void leave(GameContainer container, StateBasedGame game) throws SlickException {
+        super.leave(container, game);
+        basedGame_ = null;
+        gameContainer_ = null;
+        container.getInput().removeMouseListener(this);
+    }
+
+    @Override
     public void mouseClicked(int button, int x, int y, int clickCount) {
         super.mouseClicked(button, x, y, clickCount);
 
-        if (startBox_.contains(x, y)) {
+        if (createBox_.contains(x, y)) {
             basedGame_.enterState(Constants.STATE_PLAY);
         } else if (exitBox_.contains(x, y)) {
             gameContainer_.exit();
