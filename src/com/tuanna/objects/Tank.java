@@ -7,8 +7,6 @@ import org.newdawn.slick.particles.effects.FireEmitter;
 
 public class Tank extends DynamicObject {
 
-    private static int TANK_CREATED_COUNT;
-
     private static final float DEFAULT_HANDLING = 4;
     private static final float MAX_VELOCITY = 0.3f;
     private static final float DEFAULT_ACCELERATION = 0.015f;
@@ -28,7 +26,7 @@ public class Tank extends DynamicObject {
         friction_ = 0.0003f;
         particleSystem_ = new ParticleSystem(new Image(smokeImage));
         particleSystem_.addEmitter(new FireEmitter(0, 0, 10));
-        id_ = TANK_CREATED_COUNT++;
+        id_ = (int) System.currentTimeMillis();
     }
 
     public void accelerate() {
