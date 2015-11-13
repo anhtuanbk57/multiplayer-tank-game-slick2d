@@ -22,7 +22,7 @@ public class MainGame extends StateBasedGame {
         getState(Constants.STATE_PLAY).init(gc, this);
         getState(Constants.STATE_MENU).init(gc, this);
 
-        enterState(Constants.STATE_MENU);
+        enterState(Constants.STATE_PLAY);
     }
 
     public static void main(String[] args) {
@@ -31,6 +31,7 @@ public class MainGame extends StateBasedGame {
             appGc = new AppGameContainer(new MainGame("Simple Carmageddon"));
             appGc.setDisplayMode(Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT, false);
             appGc.setTargetFrameRate(Constants.MAX_FPS);
+            appGc.setShowFPS(true);
             // Update game even when the window is not focused
             appGc.setAlwaysRender(true);
             appGc.start();

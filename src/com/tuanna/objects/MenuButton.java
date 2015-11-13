@@ -1,4 +1,4 @@
-package com.tuanna.widgets;
+package com.tuanna.objects;
 
 import org.newdawn.slick.*;
 import org.newdawn.slick.geom.RoundedRectangle;
@@ -40,7 +40,7 @@ public class MenuButton extends RoundedRectangle {
         }
     }
 
-    public void drawSelf() {
+    public void draw() {
         normalBackground_.draw(x, y, width, height);
         font_.drawString(textPosX_, textPosY_, text_, Color.orange);
     }

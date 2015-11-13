@@ -1,7 +1,7 @@
 package com.tuanna.states;
 
 import com.tuanna.main.Constants;
-import com.tuanna.widgets.MenuButton;
+import com.tuanna.objects.MenuButton;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.*;
 import org.newdawn.slick.Graphics;
@@ -63,9 +63,9 @@ public class MenuState extends BasicGameState {
     @Override
     public void render(GameContainer gc, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
         graphics.drawImage(cover_, 0, 0);
-        createBox_.drawSelf();
-        joinBox_.drawSelf();
-        exitBox_.drawSelf();
+        createBox_.draw();
+        joinBox_.draw();
+        exitBox_.draw();
     }
 
     @Override
