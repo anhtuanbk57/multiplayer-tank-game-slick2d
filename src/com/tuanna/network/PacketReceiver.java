@@ -10,21 +10,25 @@ public class PacketReceiver {
     private Thread receiverThread_;
     private DatagramSocket datagramSocket_;
     private OnPackageReceivedListener listener_;
+    private boolean shouldContinueReceiving_;
 
     public PacketReceiver() {
         receiverThread_ = new Thread() {
+            byte[] buf = new byte[256];
+
             @Override
             public void run() {
-                if (datagramSocket_ != null) {
-                    byte[] buf = new byte[256];
-                    DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                    try {
-                        datagramSocket_.receive(packet);
-                        if (listener_ != null) {
-                            listener_.onPackageReceived(packet);
+                while (shouldContinueReceiving_) {
+                    if (datagramSocket_ != null) {
+                        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                        try {
+                            datagramSocket_.receive(packet);
+                            if (listener_ != null) {
+                                listener_.onPackageReceived(packet);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -35,19 +39,29 @@ public class PacketReceiver {
         listener_ = listener;
     }
 
+    public void removePackageReceivedListener() {
+        listener_ = null;
+        stopReceiving();
+    }
+
     public void startReceivingOnPort(int port) {
         try {
             if (datagramSocket_ != null) {
                 datagramSocket_.close();
             }
-            datagramSocket_ = new DatagramSocket(9996);
+            datagramSocket_ = new DatagramSocket(port);
         } catch (SocketException e) {
             e.printStackTrace();
         }
 
+        shouldContinueReceiving_ = true;
         if (!receiverThread_.isAlive()) {
             receiverThread_.start();
         }
+    }
+
+    public void stopReceiving() {
+        shouldContinueReceiving_ = false;
     }
 
     public interface OnPackageReceivedListener {

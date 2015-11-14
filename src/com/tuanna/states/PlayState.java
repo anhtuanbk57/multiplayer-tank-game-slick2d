@@ -24,12 +24,6 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
 
     public PlayState(int stateId) {
         stateId_ = stateId;
-        try {
-            networkHelper_ = new NetworkHelper(InetAddress.getByName("localhost"), Constants.RECEIVE_PORT);
-            networkHelper_.setNetworkMessageListener(this);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -78,6 +72,23 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
 
         networkHelper_.sendMoveMessage(playerTank.getId(), playerTank.getCenterX(), playerTank.getCenterY(),
                 playerTank.getRotation(), playerTank.getVelocity());
+    }
+
+    @Override
+    public void enter(GameContainer container, StateBasedGame game) throws SlickException {
+        super.enter(container, game);
+        try {
+            networkHelper_ = new NetworkHelper(InetAddress.getByName("localhost"), Constants.DESTINATION_PORT);
+            networkHelper_.setNetworkMessageListener(this);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void leave(GameContainer container, StateBasedGame game) throws SlickException {
+        super.leave(container, game);
+        networkHelper_.removeNetworkMessageListener();
     }
 
     @Override

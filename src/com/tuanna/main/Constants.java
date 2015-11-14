@@ -15,6 +15,6 @@ public interface Constants {
 
     int DEFAULT_PORT = 6669;
 
-    int RECEIVE_PORT = 4002;
-    int SEND_PORT = 4001;
+    int LOCAL_PORT = 4002;
+    int DESTINATION_PORT = 4001;
 }

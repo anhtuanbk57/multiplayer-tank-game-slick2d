@@ -1,7 +1,5 @@
 package com.tuanna.network;
 
-import com.tuanna.main.Constants;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -13,7 +11,7 @@ public class PacketSender {
 
     public PacketSender() {
         try {
-            datagramSocket_ = new DatagramSocket(Constants.SEND_PORT);
+            datagramSocket_ = new DatagramSocket();
         } catch (SocketException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,7 @@
 package com.tuanna.network;
 
+import com.tuanna.main.Constants;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -34,7 +36,13 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
 
     public void setNetworkMessageListener(NetworkMessageListener listener) {
         packetReceiver_.setPackageReceivedListener(this);
+        packetReceiver_.startReceivingOnPort(Constants.LOCAL_PORT);
         listener_ = listener;
+    }
+
+    public void removeNetworkMessageListener() {
+        listener_ = null;
+        packetReceiver_.removePackageReceivedListener();
     }
 
     public void sendMoveMessage(int id, float x, float y, float rotation, float velocity) {
