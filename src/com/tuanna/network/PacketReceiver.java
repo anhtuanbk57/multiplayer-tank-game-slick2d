@@ -5,13 +5,13 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 
-public class PackageReceiver {
+public class PacketReceiver {
 
     private Thread receiverThread_;
     private DatagramSocket datagramSocket_;
     private OnPackageReceivedListener listener_;
 
-    public PackageReceiver() {
+    public PacketReceiver() {
         receiverThread_ = new Thread() {
             @Override
             public void run() {

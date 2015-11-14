@@ -4,31 +4,36 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 
-public class NetworkHelper implements PackageReceiver.OnPackageReceivedListener {
+public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
 
     private static final byte OP_MOVE = 1;
     private static final byte OP_SHOOT = 2;
     private static final byte OP_DESTROY = 3;
 
-    private InetAddress inetAddress_;
+    private InetAddress destinationAddress_;
     private int port_;
     private DataOutputStream outputStreamWrapper_;
     private ByteArrayOutputStream outputStream_;
-    private PackageSender packageSender_;
-    private PackageReceiver packageReceiver_;
+    private PacketSender packetSender_;
+    private PacketReceiver packetReceiver_;
     private NetworkMessageListener listener_;
 
-    public NetworkHelper(InetAddress inetAddress, int port) {
-        inetAddress_ = inetAddress;
+    /**
+     *
+     * @param destinationAddress Address we will send packets to
+     * @param port Destination port number
+     */
+    public NetworkHelper(InetAddress destinationAddress, int port) {
+        destinationAddress_ = destinationAddress;
         port_ = port;
         outputStream_ = new ByteArrayOutputStream(256);
         outputStreamWrapper_ = new DataOutputStream(outputStream_);
-        packageSender_ = new PackageSender();
-        packageReceiver_ = new PackageReceiver();
-        packageReceiver_.setPackageReceivedListener(this);
+        packetSender_ = new PacketSender();
+        packetReceiver_ = new PacketReceiver();
     }
 
     public void setNetworkMessageListener(NetworkMessageListener listener) {
+        packetReceiver_.setPackageReceivedListener(this);
         listener_ = listener;
     }
 
@@ -41,19 +46,43 @@ public class NetworkHelper implements PackageReceiver.OnPackageReceivedListener 
             outputStreamWrapper_.writeFloat(y);
             outputStreamWrapper_.writeFloat(rotation);
             outputStreamWrapper_.writeFloat(velocity);
+            byte[] data = outputStream_.toByteArray();
+            DatagramPacket packet = new DatagramPacket(data, data.length, destinationAddress_, port_);
+            packetSender_.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void sendShootMessage(int id, float x, float y, float rotation) {
-
+        outputStream_.reset();
+        try {
+            outputStreamWrapper_.writeByte(OP_MOVE);
+            outputStreamWrapper_.writeInt(id);
+            outputStreamWrapper_.writeFloat(x);
+            outputStreamWrapper_.writeFloat(y);
+            outputStreamWrapper_.writeFloat(rotation);
+            byte[] data = outputStream_.toByteArray();
+            DatagramPacket packet = new DatagramPacket(data, data.length, destinationAddress_, port_);
+            packetSender_.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendDestroyMessage(int id, float x, float y) {
-
+        outputStream_.reset();
+        try {
+            outputStreamWrapper_.writeByte(OP_MOVE);
+            outputStreamWrapper_.writeInt(id);
+            outputStreamWrapper_.writeFloat(x);
+            outputStreamWrapper_.writeFloat(y);
+            byte[] data = outputStream_.toByteArray();
+            DatagramPacket packet = new DatagramPacket(data, data.length, destinationAddress_, port_);
+            packetSender_.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

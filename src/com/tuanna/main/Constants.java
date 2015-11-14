@@ -14,4 +14,7 @@ public interface Constants {
     String EXIT_TEXT = "EXIT";
 
     int DEFAULT_PORT = 6669;
+
+    int RECEIVE_PORT = 4002;
+    int SEND_PORT = 4001;
 }

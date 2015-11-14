@@ -1,6 +1,7 @@
 package com.tuanna.states;
 
 import com.tuanna.main.Constants;
+import com.tuanna.network.NetworkHelper;
 import com.tuanna.objects.Bullet;
 import com.tuanna.objects.GameMap;
 import com.tuanna.objects.Tank;
@@ -8,15 +9,27 @@ import org.newdawn.slick.*;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-public class PlayState extends BasicGameState {
+
+public class PlayState extends BasicGameState implements NetworkHelper.NetworkMessageListener {
 
     private int stateId_;
 
     private GameMap map_;
+    private NetworkHelper networkHelper_;
+
+    private float x, y, rotation, velocity;
 
     public PlayState(int stateId) {
         stateId_ = stateId;
+        try {
+            networkHelper_ = new NetworkHelper(InetAddress.getByName("localhost"), Constants.RECEIVE_PORT);
+            networkHelper_.setNetworkMessageListener(this);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -36,6 +49,8 @@ public class PlayState extends BasicGameState {
     @Override
     public void render(GameContainer gameContainer, StateBasedGame stateBasedGame, Graphics graphics) throws SlickException {
         map_.draw();
+
+        graphics.drawString(String.format("X: %.0f Y: %.0f Rotation: %.0f Velocity %.2f", x, y, rotation, velocity), 10, 100);
     }
 
     @Override
@@ -60,5 +75,26 @@ public class PlayState extends BasicGameState {
             map_.addObject(bullet);
         }
         map_.updateObjectsState(i);
+
+        networkHelper_.sendMoveMessage(playerTank.getId(), playerTank.getCenterX(), playerTank.getCenterY(),
+                playerTank.getRotation(), playerTank.getVelocity());
+    }
+
+    @Override
+    public void onMoveMessageReceived(int id, float x, float y, float rotation, float velocity) {
+        this.x = x;
+        this.y = y;
+        this.rotation = rotation;
+        this.velocity = velocity;
+    }
+
+    @Override
+    public void onShootMessageReceived(int id, float x, float y, float rotation) {
+
+    }
+
+    @Override
+    public void onDestroyMessageReceived(int id, float x, float y) {
+
     }
 }
