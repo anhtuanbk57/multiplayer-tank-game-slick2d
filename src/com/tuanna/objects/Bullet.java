@@ -5,7 +5,7 @@ import org.newdawn.slick.SlickException;
 
 public class Bullet extends DynamicObject {
 
-    private static float DEFAULT_VELOCITY = 1.0f;
+    private static float DEFAULT_VELOCITY = 0.3f;
     private static float DEFAULT_RANGE = 1000;
 
     private float range_ = DEFAULT_RANGE;
@@ -31,6 +31,9 @@ public class Bullet extends DynamicObject {
     @Override
     public void update(int deltaT) {
         super.update(deltaT);
+        if (isDestroyed()) {
+            return;
+        }
         double traverseDistance = Math.sqrt(getPower2(getCenterX() - originX_) + getPower2(getCenterY() + originY_));
         if (traverseDistance > range_) {
             destroy();
