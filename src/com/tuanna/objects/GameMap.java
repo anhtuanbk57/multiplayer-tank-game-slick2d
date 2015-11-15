@@ -10,6 +10,7 @@ public class GameMap {
     private Tank playerTank_;
     private Image image_;
     private ArrayList<DynamicObject> gameObjects = new ArrayList<>();
+    private ArrayList<Tank> enemyTanks_ = new ArrayList<>();
 
     private float screenWidth_;
     private float screenHeight_;
@@ -32,8 +33,11 @@ public class GameMap {
         playerTank_ = playerTank;
     }
 
-    public Tank getPlayerTank() {
-        return playerTank_;
+    public void addEnemyTank(Tank enemyTank) {
+        if (enemyTank == null) {
+            return;
+        }
+        enemyTanks_.add(enemyTank);
     }
 
     public void addObject(DynamicObject object) {
@@ -88,8 +92,10 @@ public class GameMap {
 
     private void drawOtherObjects(float offsetX, float offsetY) {
         for (DynamicObject object : gameObjects) {
-//            object.draw(object.getCenterX() + offsetX, object.getCenterY() + offsetY);
-            object.draw();
+            object.draw(object.getCenterX() + offsetX, object.getCenterY() + offsetY);
+        }
+        for (Tank tank : enemyTanks_) {
+            tank.draw(tank.getCenterX() + offsetX, tank.getCenterY() + offsetY);
         }
     }
 }

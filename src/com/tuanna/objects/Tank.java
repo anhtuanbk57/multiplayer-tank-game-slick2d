@@ -14,11 +14,8 @@ public class Tank extends DynamicObject {
     private static final long RELOAD_INTERVAL = 2000;  // 2 sec
 
     private ParticleSystem particleSystem_;
-    private Image bulletImage_;
     private int id_;
     private long lastShootTime_;
-    private float lastDrawX_;
-    private float lastDrawY_;
 
     public Tank(String carImage, String smokeImage, float centerX, float centerY) throws SlickException {
         super(carImage, centerX, centerY);
@@ -53,37 +50,17 @@ public class Tank extends DynamicObject {
         particleSystem_.update(deltaT);
     }
 
-    @Override
-    public void draw(float xPos, float yPos) {
-        lastDrawX_ = xPos;
-        lastDrawY_ = yPos;
-        super.draw(xPos, yPos);
-    }
-
     public int getId() {
         return id_;
     }
 
-    public Bullet fire() throws SlickException {
+    public boolean canShoot() throws SlickException {
         long interval = liveTime_ - lastShootTime_;
-        if (interval < RELOAD_INTERVAL || bulletImage_ == null) {
-            // Can't fire now, wait reloading
-            return null;
-        } else {
-            lastShootTime_ = liveTime_;
-            Bullet bullet = new Bullet(
-                    bulletImage_.copy(),
-                    lastDrawX_,
-                    lastDrawY_,
-                    rotation_,
-                    id_
-            );
-            bullet.setBoundDrawEnable(false);
-            return bullet;
+        if (interval < RELOAD_INTERVAL) {
+            // Reload has not been completed
+            return false;
         }
-    }
-
-    public void setBulletImage(Image bulletImage) {
-        bulletImage_ = bulletImage;
+        lastShootTime_ = liveTime_;
+        return true;
     }
 }

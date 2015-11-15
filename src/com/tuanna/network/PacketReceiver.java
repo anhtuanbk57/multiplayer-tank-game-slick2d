@@ -46,10 +46,9 @@ public class PacketReceiver {
 
     public void startReceivingOnPort(int port) {
         try {
-            if (datagramSocket_ != null) {
-                datagramSocket_.close();
-            }
-            datagramSocket_ = new DatagramSocket(port);
+//            if (datagramSocket_ == null || datagramSocket_.getPort() != port) {
+                datagramSocket_ = new DatagramSocket(port);
+//            }
         } catch (SocketException e) {
             e.printStackTrace();
         }

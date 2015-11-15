@@ -109,6 +109,14 @@ public abstract class DynamicObject extends Polygon {
         return rotation_;
     }
 
+    public void setVelocity(float velocity) {
+        velocity_ = velocity;
+    }
+
+    public void setRotation(float rotation) {
+        rotation_ = rotation;
+    }
+
     public float getVelocity() {
         return velocity_;
     }

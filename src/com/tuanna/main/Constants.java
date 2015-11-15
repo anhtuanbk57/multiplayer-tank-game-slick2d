@@ -15,6 +15,8 @@ public interface Constants {
 
     int DEFAULT_PORT = 6669;
 
-    int LOCAL_PORT = 4002;
-    int DESTINATION_PORT = 4001;
+    int sw = 1;
+
+    int LOCAL_PORT = sw == 1 ? 6232 : 6231;
+    int DESTINATION_PORT = sw == 1 ? 6231 : 6232;
 }
