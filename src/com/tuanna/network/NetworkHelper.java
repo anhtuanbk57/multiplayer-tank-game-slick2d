@@ -10,7 +10,7 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
 
     private static final byte OP_MOVE = 1;
     private static final byte OP_SHOOT = 2;
-    private static final byte OP_DESTROY = 3;
+    private static final byte OP_BEING_HIT = 3;
 
     private InetAddress destinationAddress_;
     private int port_;
@@ -65,7 +65,7 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
     public void sendShootMessage(int id, float x, float y, float rotation) {
         outputStream_.reset();
         try {
-            outputStreamWrapper_.writeByte(OP_MOVE);
+            outputStreamWrapper_.writeByte(OP_SHOOT);
             outputStreamWrapper_.writeInt(id);
             outputStreamWrapper_.writeFloat(x);
             outputStreamWrapper_.writeFloat(y);
@@ -78,13 +78,14 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
         }
     }
 
-    public void sendDestroyMessage(int id, float x, float y) {
+    public void sendBeingHitMessage(int id, float x, float y, boolean isDestroyed) {
         outputStream_.reset();
         try {
-            outputStreamWrapper_.writeByte(OP_MOVE);
+            outputStreamWrapper_.writeByte(OP_BEING_HIT);
             outputStreamWrapper_.writeInt(id);
             outputStreamWrapper_.writeFloat(x);
             outputStreamWrapper_.writeFloat(y);
+            outputStreamWrapper_.writeBoolean(isDestroyed);
             byte[] data = outputStream_.toByteArray();
             DatagramPacket packet = new DatagramPacket(data, data.length, destinationAddress_, port_);
             packetSender_.send(packet);
@@ -109,8 +110,8 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
                 case OP_SHOOT:
                     handleShootMessage(inputStreamWrapper);
                     break;
-                case OP_DESTROY:
-                    handleDestroyMessage(inputStreamWrapper);
+                case OP_BEING_HIT:
+                    handleBeingHitMessage(inputStreamWrapper);
                     break;
             }
         } catch (IOException e) {
@@ -154,14 +155,15 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
         }
     }
 
-    private void handleDestroyMessage(DataInputStream inputStream) {
+    private void handleBeingHitMessage(DataInputStream inputStream) {
         try {
             int id = inputStream.readInt();
             float x = inputStream.readFloat();
             float y = inputStream.readFloat();
+            boolean isDestroyed = inputStream.readBoolean();
             // Below statement assume that listener_ is not null, because this method
             // was called from onPackageReceived()
-            listener_.onDestroyMessageReceived(id, x, y);
+            listener_.onBeingHitMessageReceived(id, x, y, isDestroyed);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -170,6 +172,6 @@ public class NetworkHelper implements PacketReceiver.OnPackageReceivedListener {
     public interface NetworkMessageListener {
         void onMoveMessageReceived(int id, float x, float y, float rotation, float velocity);
         void onShootMessageReceived(int id, float x, float y, float rotation);
-        void onDestroyMessageReceived(int id, float x, float y);
+        void onBeingHitMessageReceived(int id, float x, float y, boolean isDestroyed);
     }
 }

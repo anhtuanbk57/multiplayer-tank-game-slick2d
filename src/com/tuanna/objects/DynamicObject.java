@@ -13,9 +13,6 @@ public abstract class DynamicObject extends Polygon {
     protected float velocity_;
     protected float rotation_;
 
-    private float lastDrawX_;
-    private float lastDrawY_;
-
     private boolean isBoundDrawEnable_;
     private boolean isDestroyed_;
     protected long liveTime_;
@@ -71,17 +68,11 @@ public abstract class DynamicObject extends Polygon {
         }
     }
 
-    public void draw() {
-        draw(getCenterX(), getCenterY());
-    }
-
     public void draw(float xPos, float yPos) {
         if (isDestroyed_) {
             return;
         }
 
-        lastDrawX_ = xPos;
-        lastDrawY_ = yPos;
         image_.setRotation(-rotation_);
         image_.drawCentered(xPos, yPos);
 
@@ -92,14 +83,6 @@ public abstract class DynamicObject extends Polygon {
             ));
             ShapeRenderer.draw(bound);
         }
-    }
-
-    public float getFriction() {
-        return friction_;
-    }
-
-    public void setFriction(float friction) {
-        friction_ = friction;
     }
 
     public boolean isDestroyed() {
@@ -126,11 +109,7 @@ public abstract class DynamicObject extends Polygon {
         return velocity_;
     }
 
-    public float getLastDrawX() {
-        return lastDrawX_;
-    }
-
-    public float getLastDrawY() {
-        return lastDrawY_;
+    public void setFriction(float friction) {
+        friction_ = friction;
     }
 }

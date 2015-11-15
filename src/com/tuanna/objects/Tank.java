@@ -16,6 +16,9 @@ public class Tank extends DynamicObject {
     private ParticleSystem particleSystem_;
     private int id_;
     private long lastShootTime_;
+    private boolean isDamaged_;
+
+    private TankStatusListener listener_;
 
     public Tank(String carImage, String smokeImage, float centerX, float centerY) throws SlickException {
         super(carImage, centerX, centerY);
@@ -24,6 +27,10 @@ public class Tank extends DynamicObject {
         particleSystem_ = new ParticleSystem(new Image(smokeImage));
         particleSystem_.addEmitter(new FireEmitter(0, 0, 10));
         id_ = (int) System.currentTimeMillis();
+    }
+
+    public void setTankStatusListener(TankStatusListener listener) {
+        listener_ = listener;
     }
 
     public void accelerate() {
@@ -44,6 +51,13 @@ public class Tank extends DynamicObject {
         rotation_ -= DEFAULT_HANDLING * (velocity_ / MAX_VELOCITY);
     }
 
+    public void takeDamage() {
+        isDamaged_ = true;
+        if (listener_ != null) {
+            listener_.onBeingHit(id_, false);
+        }
+    }
+
     @Override
     public void update(int deltaT) {
         super.update(deltaT);
@@ -62,5 +76,17 @@ public class Tank extends DynamicObject {
         }
         lastShootTime_ = liveTime_;
         return true;
+    }
+
+    @Override
+    public void draw(float xPos, float yPos) {
+        super.draw(xPos, yPos);
+        if (isDamaged_) {
+            particleSystem_.render(xPos, yPos);
+        }
+    }
+
+    public interface TankStatusListener {
+        void onBeingHit(int tankId, boolean isDestroyed);
     }
 }

@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 
-public class PlayState extends BasicGameState implements NetworkHelper.NetworkMessageListener {
+public class PlayState extends BasicGameState implements NetworkHelper.NetworkMessageListener, Tank.TankStatusListener {
 
     private int stateId_;
 
@@ -46,6 +46,7 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         map_ = new GameMap("res/map.png", Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
         playerTank_ = new Tank("res/tank1.png", "res/smoke.png", Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
         playerTank_.setBoundDrawEnable(true);
+        playerTank_.setTankStatusListener(this);
         map_.setPlayerTank(playerTank_);
         enemyTank_ = new Tank("res/tank1.png", "res/smoke.png", 50, 50);
         enemyTank_.setBoundDrawEnable(true);
@@ -81,7 +82,7 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         if (input.isKeyDown(Input.KEY_J) && playerTank_.canShoot()) {
             Bullet bullet = new Bullet(
                     bulletImage_.copy(),
-                    playerTank_.getLastDrawX(), playerTank_.getLastDrawY(),
+                    playerTank_.getCenterX(), playerTank_.getCenterY(),
                     playerTank_.getRotation(),
                     playerTank_.getId());
             networkHelper_.sendShootMessage(
@@ -94,14 +95,6 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
 
         networkHelper_.sendMoveMessage(playerTank_.getId(), playerTank_.getCenterX(), playerTank_.getCenterY(),
                 playerTank_.getRotation(), playerTank_.getVelocity());
-    }
-
-    @Override
-    public void leave(GameContainer container, StateBasedGame game) throws SlickException {
-        super.leave(container, game);
-//        if (networkHelper_ != null) {
-//            networkHelper_.removeNetworkMessageListener();
-//        }
     }
 
     @Override
@@ -130,7 +123,20 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
     }
 
     @Override
-    public void onDestroyMessageReceived(int id, float x, float y) {
+    public void onBeingHitMessageReceived(int id, float x, float y, boolean isDestroyed) {
+        enemyTank_.setCenterX(x);
+        enemyTank_.setCenterY(y);
+        if (isDestroyed) {
+            enemyTank_.destroy();
+        } else {
+            enemyTank_.takeDamage();
+        }
+    }
 
+    @Override
+    public void onBeingHit(int tankId, boolean isDestroyed) {
+        if (tankId == playerTank_.getId()) {
+            networkHelper_.sendBeingHitMessage(tankId, playerTank_.getCenterX(), playerTank_.getCenterY(), isDestroyed);
+        }
     }
 }
