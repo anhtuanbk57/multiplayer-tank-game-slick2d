@@ -43,8 +43,8 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
 
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
-        map_ = new GameMap("res/map.jpg", Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-        playerTank_ = new Tank("res/tank3.png", "res/smoke.png", Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
+        map_ = new GameMap("res/map.png", Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
+        playerTank_ = new Tank("res/tank1.png", "res/smoke.png", Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
         playerTank_.setBoundDrawEnable(true);
         map_.setPlayerTank(playerTank_);
         enemyTank_ = new Tank("res/tank1.png", "res/smoke.png", 50, 50);
@@ -81,7 +81,7 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         if (input.isKeyDown(Input.KEY_J) && playerTank_.canShoot()) {
             Bullet bullet = new Bullet(
                     bulletImage_.copy(),
-                    playerTank_.getCenterX(), playerTank_.getCenterY(),
+                    playerTank_.getLastDrawX(), playerTank_.getLastDrawY(),
                     playerTank_.getRotation(),
                     playerTank_.getId());
             networkHelper_.sendShootMessage(

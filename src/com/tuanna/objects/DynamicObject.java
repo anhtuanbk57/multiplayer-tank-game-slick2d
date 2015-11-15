@@ -13,6 +13,9 @@ public abstract class DynamicObject extends Polygon {
     protected float velocity_;
     protected float rotation_;
 
+    private float lastDrawX_;
+    private float lastDrawY_;
+
     private boolean isBoundDrawEnable_;
     private boolean isDestroyed_;
     protected long liveTime_;
@@ -77,6 +80,8 @@ public abstract class DynamicObject extends Polygon {
             return;
         }
 
+        lastDrawX_ = xPos;
+        lastDrawY_ = yPos;
         image_.setRotation(-rotation_);
         image_.drawCentered(xPos, yPos);
 
@@ -119,5 +124,13 @@ public abstract class DynamicObject extends Polygon {
 
     public float getVelocity() {
         return velocity_;
+    }
+
+    public float getLastDrawX() {
+        return lastDrawX_;
+    }
+
+    public float getLastDrawY() {
+        return lastDrawY_;
     }
 }
