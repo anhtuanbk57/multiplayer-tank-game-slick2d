@@ -10,7 +10,7 @@ import org.newdawn.slick.particles.effects.FireEmitter;
 public class Tank extends DynamicObject {
 
     private static final float DEFAULT_HANDLING = 4;
-    private static final float MAX_VELOCITY = 0.3f;
+    private static final float MAX_VELOCITY = 0.5f;
     private static final float DEFAULT_ACCELERATION = 0.015f;
     private static final float BRAKE_MODIFIER = 0.03f;
     private static final float FRICTION_MODIFIER = 0.0003f;

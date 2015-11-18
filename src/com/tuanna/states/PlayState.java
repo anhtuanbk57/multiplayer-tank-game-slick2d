@@ -11,6 +11,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 
 public class PlayState extends BasicGameState implements NetworkHelper.NetworkMessageListener, Tank.TankStatusListener {
@@ -50,7 +51,11 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         map_ = new GameMap("res/map.png", Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-        playerTank_ = new Tank("res/tank1.png", 800, 800);
+
+        Random random = new Random();
+        int x = random.nextInt(1000) + 600;
+        int y = random.nextInt(1000) + 600;
+        playerTank_ = new Tank("res/tank1.png", x, y);
         playerTank_.setBoundDrawEnable(true);
         playerTank_.setTankStatusListener(this);
         map_.setPlayerTank(playerTank_);
@@ -82,10 +87,11 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         if (input.isKeyDown(Input.KEY_ESCAPE)) {
             stateBasedGame.enterState(Constants.STATE_MENU);
         }
+        map_.updateObjectsState(i);
         // Skip other update if game was over
-//        if (isLost_ || isWin_) {
-//            return;
-//        }
+        if (isLost_ || isWin_) {
+            return;
+        }
         if (input.isKeyDown(Input.KEY_W)) {
             playerTank_.accelerate();
         }
@@ -110,7 +116,6 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
                     playerTank_.getRotation());
             map_.addObject(bullet);
         }
-        map_.updateObjectsState(i);
 
         networkHelper_.sendMoveMessage(playerTank_.getId(), playerTank_.getCenterX(), playerTank_.getCenterY(),
                 playerTank_.getRotation(), playerTank_.getVelocity());

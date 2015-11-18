@@ -49,12 +49,12 @@ public class GameMap {
     }
 
     public void updateObjectsState(int deltaT) {
-        playerTank_.update(deltaT);
         for (DynamicObject object : gameObjects) {
+            object.update(deltaT);
+            // Skip bullet checking if this object was destroyed
             if (object.isDestroyed()) {
                 continue;
             }
-            object.update(deltaT);
             if (object instanceof Bullet) {
                 boolean bulletFromEnemy = ((Bullet) object).getOwnerId() != playerTank_.getId();
                 boolean bulletHitPlayer = playerTank_.contains(object) || playerTank_.intersects(object);
@@ -65,12 +65,20 @@ public class GameMap {
                 }
             }
         }
+
+        boolean isPlayerTankCollide = false;
         for (Tank tank : enemyTanks_) {
             tank.update(deltaT);
+            if (!isPlayerTankCollide || !playerTank_.isDestroyed()) {
+                isPlayerTankCollide = playerTank_.isCollideWith(tank);
+            }
         }
         // If player tank go outside play area, destroy it
         if (!playerTank_.isDestroyed() && !battleGround_.contains(playerTank_)) {
             playerTank_.destroy();
+        }
+        if (!isPlayerTankCollide) {
+            playerTank_.update(deltaT);
         }
     }
 
