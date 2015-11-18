@@ -13,12 +13,13 @@ public class Tank extends DynamicObject {
     private static final float MAX_VELOCITY = 0.3f;
     private static final float DEFAULT_ACCELERATION = 0.015f;
     private static final float BRAKE_MODIFIER = 0.03f;
+    private static final float FRICTION_MODIFIER = 0.0003f;
     private static final long RELOAD_INTERVAL = 2000;  // 2 sec
     private static final int MAX_HITS = 2;
 
     private ParticleSystem smokeParticle_;
     private ParticleSystem fireParticle_;
-    private Animation exploseAnimation_;
+    private Animation explodeAnimation_;
     private int id_;
     private long lastShootTime_;
     private boolean isDamaged_;
@@ -29,14 +30,14 @@ public class Tank extends DynamicObject {
     public Tank(String carImage, float centerX, float centerY) throws SlickException {
         super(carImage, centerX, centerY);
 
-        friction_ = 0.0003f;
+        friction_ = FRICTION_MODIFIER;
         smokeParticle_ = new ParticleSystem(new Image("res/smoke.png"));
         smokeParticle_.addEmitter(new FireEmitter(0, 0, 10));
         fireParticle_ = new ParticleSystem(new Image("res/fire.png"));
         fireParticle_.addEmitter(new FireEmitter(0, 0, 20));
         SpriteSheet sheet = new SpriteSheet("res/explosion.png", 94, 91);
-        exploseAnimation_ = new Animation(sheet, 200);
-        exploseAnimation_.setLooping(false);
+        explodeAnimation_ = new Animation(sheet, 200);
+        explodeAnimation_.setLooping(false);
 
         id_ = (int) System.currentTimeMillis();
     }
@@ -46,32 +47,56 @@ public class Tank extends DynamicObject {
     }
 
     public void accelerate() {
-        float newVelocity = velocity_ + DEFAULT_ACCELERATION;
-        velocity_ = newVelocity < MAX_VELOCITY ? newVelocity : MAX_VELOCITY;
+        if (!isDestroyed()) {
+            float newVelocity = velocity_ + DEFAULT_ACCELERATION;
+            velocity_ = newVelocity < MAX_VELOCITY ? newVelocity : MAX_VELOCITY;
+        }
     }
 
     public void brake() {
-        float newVelocity = velocity_ - BRAKE_MODIFIER;
-        velocity_ = newVelocity > -MAX_VELOCITY ? newVelocity : -MAX_VELOCITY;
+        if (!isDestroyed()) {
+            float newVelocity = velocity_ - BRAKE_MODIFIER;
+            velocity_ = newVelocity > -MAX_VELOCITY ? newVelocity : -MAX_VELOCITY;
+        }
     }
 
     public void turnLeft() {
-        rotation_ += DEFAULT_HANDLING * (velocity_ / MAX_VELOCITY);
+        if (!isDestroyed()) {
+            rotation_ += DEFAULT_HANDLING * (velocity_ / MAX_VELOCITY);
+        }
     }
 
     public void turnRight() {
-        rotation_ -= DEFAULT_HANDLING * (velocity_ / MAX_VELOCITY);
+        if (!isDestroyed()) {
+            rotation_ -= DEFAULT_HANDLING * (velocity_ / MAX_VELOCITY);
+        }
     }
 
     public void takeDamage() {
         isDamaged_ = true;
         if (--hitRemaining_ <= 0) {
             destroy();
-            exploseAnimation_.start();
+        } else {
+            // Increase friction to make tank move slower after being hit.
+            friction_ += FRICTION_MODIFIER * 2;
+            notifyHit();
         }
+    }
+
+    private void notifyHit() {
         if (listener_ != null) {
             listener_.onBeingHit(id_, isDestroyed());
         }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        // Need to update isDamaged here also, because destroy maybe call directly when tank goes
+        // outside playing area.
+        isDamaged_ = true;
+        explodeAnimation_.start();
+        notifyHit();
     }
 
     @Override
@@ -79,8 +104,8 @@ public class Tank extends DynamicObject {
         super.update(deltaT);
         if (isDestroyed()) {
             fireParticle_.update(deltaT);
-            if (!exploseAnimation_.isStopped()) {
-                exploseAnimation_.update(deltaT);
+            if (!explodeAnimation_.isStopped()) {
+                explodeAnimation_.update(deltaT);
             }
         }
         if (isDamaged_) {
@@ -106,8 +131,8 @@ public class Tank extends DynamicObject {
     public void draw(float xPos, float yPos) {
         super.draw(xPos, yPos);
         if (isDestroyed()) {
-            if (!exploseAnimation_.isStopped()) {
-                exploseAnimation_.draw(getMinX(), getMinY());
+            if (!explodeAnimation_.isStopped()) {
+                explodeAnimation_.draw(xPos - 40, yPos - 40);
             } else {
                 fireParticle_.render(xPos, yPos);
             }

@@ -31,6 +31,15 @@ public class Bullet extends DynamicObject {
         }
     }
 
+    @Override
+    public void draw(float xPos, float yPos) {
+        // Skip drawing if bullet was destroy
+        if (isDestroyed()) {
+            return;
+        }
+        super.draw(xPos, yPos);
+    }
+
     public int getOwnerId() {
         return ownerId_;
     }

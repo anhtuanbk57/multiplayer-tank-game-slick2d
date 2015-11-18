@@ -2,6 +2,7 @@ package com.tuanna.objects;
 
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Rectangle;
 
 import java.util.ArrayList;
 
@@ -11,6 +12,7 @@ public class GameMap {
     private Image image_;
     private ArrayList<DynamicObject> gameObjects = new ArrayList<>();
     private ArrayList<Tank> enemyTanks_ = new ArrayList<>();
+    private Rectangle battleGround_;
 
     private float screenWidth_;
     private float screenHeight_;
@@ -23,6 +25,9 @@ public class GameMap {
         screenHeight_ = screenHeight;
         halfWidth_ = screenWidth / 2;
         halfHeight_ = screenHeight / 2;
+
+        // Hard code according to map file.
+        battleGround_ = new Rectangle(373, 365, 2540, 2264);
     }
 
     public void setPlayerTank(Tank playerTank) {
@@ -62,6 +67,10 @@ public class GameMap {
         }
         for (Tank tank : enemyTanks_) {
             tank.update(deltaT);
+        }
+        // If player tank go outside play area, destroy it
+        if (!playerTank_.isDestroyed() && !battleGround_.contains(playerTank_)) {
+            playerTank_.destroy();
         }
     }
 

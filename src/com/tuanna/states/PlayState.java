@@ -22,10 +22,14 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
     private Tank enemyTank_;
     private NetworkHelper networkHelper_;
     private Image bulletImage_;
+    private Image victoryImage_;
+    private Image defeatImage_;
+
+    private boolean isWin_;
+    private boolean isLost_;
 
     // Temp
     float x, y, rotation, velocity;
-    Animation exlosionAnimation;
 
     public PlayState(int stateId) {
         stateId_ = stateId;
@@ -46,19 +50,17 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
     @Override
     public void init(GameContainer gameContainer, StateBasedGame stateBasedGame) throws SlickException {
         map_ = new GameMap("res/map.png", Constants.WINDOW_WIDTH, Constants.WINDOW_HEIGHT);
-        playerTank_ = new Tank("res/tank1.png", Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
+        playerTank_ = new Tank("res/tank1.png", 800, 800);
         playerTank_.setBoundDrawEnable(true);
         playerTank_.setTankStatusListener(this);
         map_.setPlayerTank(playerTank_);
-        enemyTank_ = new Tank("res/tank1.png", 50, 50);
+        enemyTank_ = new Tank("res/tank1.png", 600, 600);
         enemyTank_.setBoundDrawEnable(true);
         map_.addEnemyTank(enemyTank_);
 
         bulletImage_ = new Image("res/bullet.png");
-
-        SpriteSheet sheet = new SpriteSheet("res/explosion.png", 94, 91);
-//        exlosionAnimation = new Animation(sheet, 50);
-//        exlosionAnimation.setLooping(false);
+        victoryImage_ = new Image("res/victory.png");
+        defeatImage_ = new Image("res/defeat.png");
     }
 
     @Override
@@ -66,16 +68,24 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         // Map also takes care of drawing any object has been add to it, include tanks
         map_.draw();
 
-//        exlosionAnimation.draw(50, 50);
+        if (isWin_) {
+            victoryImage_.drawCentered(Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
+        } else if (isLost_) {
+            defeatImage_.drawCentered(Constants.WINDOW_WIDTH / 2, Constants.WINDOW_HEIGHT / 2);
+        }
         graphics.drawString(String.format("X: %.0f Y: %.0f Rotation: %.0f Velocity: %.2f", x, y, rotation, velocity), 100, 100);
     }
 
     @Override
     public void update(GameContainer gameContainer, StateBasedGame stateBasedGame, int i) throws SlickException {
-//        exlosionAnimation.update(i);
-
         Input input = gameContainer.getInput();
-
+        if (input.isKeyDown(Input.KEY_ESCAPE)) {
+            stateBasedGame.enterState(Constants.STATE_MENU);
+        }
+        // Skip other update if game was over
+//        if (isLost_ || isWin_) {
+//            return;
+//        }
         if (input.isKeyDown(Input.KEY_W)) {
             playerTank_.accelerate();
         }
@@ -137,6 +147,7 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
         enemyTank_.setCenterY(y);
         if (isDestroyed) {
             enemyTank_.destroy();
+            isWin_ = true;
         } else {
             enemyTank_.takeDamage();
         }
@@ -146,6 +157,7 @@ public class PlayState extends BasicGameState implements NetworkHelper.NetworkMe
     public void onBeingHit(int tankId, boolean isDestroyed) {
         if (tankId == playerTank_.getId()) {
             networkHelper_.sendBeingHitMessage(tankId, playerTank_.getCenterX(), playerTank_.getCenterY(), isDestroyed);
+            isLost_ = isDestroyed;
         }
     }
 }

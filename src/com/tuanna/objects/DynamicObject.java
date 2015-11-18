@@ -69,10 +69,6 @@ public abstract class DynamicObject extends Polygon {
     }
 
     public void draw(float xPos, float yPos) {
-        if (isDestroyed_) {
-            return;
-        }
-
         image_.setRotation(-rotation_);
         image_.drawCentered(xPos, yPos);
 
