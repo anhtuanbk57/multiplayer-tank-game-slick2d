@@ -12,4 +12,11 @@ public interface Constants {
     String CREATE_TEXT = "CREATE GAME";
     String JOIN_TEXT = "JOIN GAME";
     String EXIT_TEXT = "EXIT";
+
+    int DEFAULT_PORT = 6669;
+
+    int sw = 1;
+
+    int LOCAL_PORT = sw == 1 ? 6232 : 6231;
+    int DESTINATION_PORT = sw == 1 ? 6231 : 6232;
 }

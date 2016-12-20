@@ -2,6 +2,7 @@ package com.tuanna.objects;
 
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.geom.Rectangle;
 
 import java.util.ArrayList;
 
@@ -10,13 +11,13 @@ public class GameMap {
     private Tank playerTank_;
     private Image image_;
     private ArrayList<DynamicObject> gameObjects = new ArrayList<>();
+    private ArrayList<Tank> enemyTanks_ = new ArrayList<>();
+    private Rectangle battleGround_;
 
     private float screenWidth_;
     private float screenHeight_;
     private float halfWidth_;
     private float halfHeight_;
-    private float rightBoundOffset_;
-    private float bottomBoundOffset_;
 
     public GameMap(String imagePath, float screenWidth, float screenHeight) throws SlickException {
         image_ = new Image(imagePath);
@@ -24,16 +25,20 @@ public class GameMap {
         screenHeight_ = screenHeight;
         halfWidth_ = screenWidth / 2;
         halfHeight_ = screenHeight / 2;
-        rightBoundOffset_ = screenWidth - image_.getWidth();
-        bottomBoundOffset_ = screenHeight - image_.getHeight();
+
+        // Hard code according to map file.
+        battleGround_ = new Rectangle(373, 365, 2540, 2264);
     }
 
     public void setPlayerTank(Tank playerTank) {
         playerTank_ = playerTank;
     }
 
-    public Tank getPlayerTank() {
-        return playerTank_;
+    public void addEnemyTank(Tank enemyTank) {
+        if (enemyTank == null) {
+            return;
+        }
+        enemyTanks_.add(enemyTank);
     }
 
     public void addObject(DynamicObject object) {
@@ -44,52 +49,56 @@ public class GameMap {
     }
 
     public void updateObjectsState(int deltaT) {
-        playerTank_.update(deltaT);
         for (DynamicObject object : gameObjects) {
             object.update(deltaT);
+            // Skip bullet checking if this object was destroyed
+            if (object.isDestroyed()) {
+                continue;
+            }
+            if (object instanceof Bullet) {
+                boolean bulletFromEnemy = ((Bullet) object).getOwnerId() != playerTank_.getId();
+                boolean bulletHitPlayer = playerTank_.contains(object) || playerTank_.intersects(object);
+                if (bulletFromEnemy && bulletHitPlayer) {
+                    playerTank_.takeDamage();
+                    // Destroy bullet after it hit the tank
+                    object.destroy();
+                }
+            }
+        }
+
+        boolean isPlayerTankCollide = false;
+        for (Tank tank : enemyTanks_) {
+            tank.update(deltaT);
+            if (!isPlayerTankCollide || !playerTank_.isDestroyed()) {
+                isPlayerTankCollide = playerTank_.isCollideWith(tank);
+            }
+        }
+        // If player tank go outside play area, destroy it
+        if (!playerTank_.isDestroyed() && !battleGround_.contains(playerTank_)) {
+            playerTank_.destroy();
+        }
+        if (!isPlayerTankCollide) {
+            playerTank_.update(deltaT);
         }
     }
 
     public void draw() {
         // Track moves in opposite direction to car
         float offsetX = -playerTank_.getCenterX() + halfWidth_;
-        float shiftX = 0;
-        // Check map bounds
-        if (offsetX > 0) {
-            shiftX = offsetX;
-            offsetX = 0;
-        }
-        if (offsetX < rightBoundOffset_) {
-            shiftX = offsetX - rightBoundOffset_;
-            offsetX = rightBoundOffset_;
-        }
         float offsetY = -playerTank_.getCenterY() + halfHeight_;
-        float shiftY = 0;
-        if (offsetY > 0) {
-            shiftY = offsetY;
-            offsetY = 0;
-        }
-        if (offsetY < bottomBoundOffset_) {
-            shiftY = offsetY - bottomBoundOffset_;
-            offsetY = bottomBoundOffset_;
-        }
         image_.draw(offsetX, offsetY);
-
-        float tankX = screenWidth_ / 2 - shiftX;
-        tankX = tankX > 0 ? tankX : 0;
-        tankX = tankX < screenWidth_ ? tankX : screenWidth_;
-        float tankY = screenHeight_ / 2 - shiftY;
-        tankY = tankY > 0 ? tankY : 0;
-        tankY = tankY < screenHeight_ ? tankY : screenHeight_;
-        playerTank_.draw(tankX, tankY);
+        playerTank_.draw(halfWidth_, halfHeight_);
 
         drawOtherObjects(offsetX, offsetY);
     }
 
     private void drawOtherObjects(float offsetX, float offsetY) {
+        // TODO: Schedule for deleting destroyed objects after 5 - 10 seconds.
         for (DynamicObject object : gameObjects) {
-//            object.draw(object.getCenterX() + offsetX, object.getCenterY() + offsetY);
-            object.draw();
+            object.draw(object.getCenterX() + offsetX, object.getCenterY() + offsetY);
+        }
+        for (Tank tank : enemyTanks_) {
+            tank.draw(tank.getCenterX() + offsetX, tank.getCenterY() + offsetY);
         }
     }
 }

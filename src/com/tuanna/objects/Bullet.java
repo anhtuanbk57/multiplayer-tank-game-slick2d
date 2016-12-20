@@ -5,12 +5,9 @@ import org.newdawn.slick.SlickException;
 
 public class Bullet extends DynamicObject {
 
-    private static float DEFAULT_VELOCITY = 1.0f;
-    private static float DEFAULT_RANGE = 1000;
+    private static final float DEFAULT_VELOCITY = 1.0f;
+    private static final float MAX_LIVE_TIME = 1500;
 
-    private float range_ = DEFAULT_RANGE;
-    private float originX_;
-    private float originY_;
     // Id of the object that generate this bullet
     private int ownerId_;
 
@@ -19,8 +16,6 @@ public class Bullet extends DynamicObject {
         velocity_ = DEFAULT_VELOCITY;
         rotation_ = rotation;
         ownerId_ = ownerId;
-        originX_ = centerX;
-        originY_ = centerY;
     }
 
     @Override
@@ -31,18 +26,18 @@ public class Bullet extends DynamicObject {
     @Override
     public void update(int deltaT) {
         super.update(deltaT);
-        double traverseDistance = Math.sqrt(getPower2(getCenterX() - originX_) + getPower2(getCenterY() + originY_));
-        if (traverseDistance > range_) {
+        if (liveTime_ > MAX_LIVE_TIME) {
             destroy();
         }
     }
 
-    private float getPower2(float x) {
-        return x * x;
-    }
-
-    public void setRange(float range) {
-        range_ = range;
+    @Override
+    public void draw(float xPos, float yPos) {
+        // Skip drawing if bullet was destroy
+        if (isDestroyed()) {
+            return;
+        }
+        super.draw(xPos, yPos);
     }
 
     public int getOwnerId() {
